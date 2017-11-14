@@ -118,16 +118,30 @@ int main()
 
 //////////////////////////////////////////////////////////////////////////////////////////
 
-	if (baby->test() != SUCCESS)	//If baby's test function did not return success
+	bool stop = false;
+	int lineNumber = 1;
+
+	while (stop == false)
 	{
-		cout << "Critical program failure. Baby is dead :(" << endl;
-	}
-	else
-	{
-		cout << endl << "Testing was successful!" << endl;
+		baby->setCurrentInstruction(baby->readLineFromStore(lineNumber));
+
+		baby->setPresentInstruction(baby->getCurrentInstruction());
+
+		if(baby->callOpcode(lineNumber) == STOP)
+		{
+			stop = true;
+		}
+	
+		baby->printState();
+
+		if(baby->cont() == END_PROGRAM)
+		{
+			stop = true;
+		}
+
+		lineNumber++;
 	}
 
-	delete baby;			//Safely delete the baby object (has a programmed destructor)
-
-	return 0;
+	cout << "Terminating." << endl;
 }
+

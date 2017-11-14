@@ -41,6 +41,8 @@ public:
 	string getAccumulator();
 	string getCurrentInstruction();
 	string getPresentInstruction();
+	void setPresentInstruction(string NewInstruction);
+	void setCurrentInstruction(string NewInstruction);
 
 	string readLineFromStore(int lineNumber);
 	int getOperand(int lineNumber);
@@ -56,7 +58,7 @@ public:
 
 	void insertInstruction(string line, int lineNumber);
 
-	void callOpcode(int lineNumber);
+	int callOpcode(int lineNumber);
 	void printState();
 	int cont();
 
@@ -66,3 +68,4 @@ public:
 };
 
 #endif /* BABY_H_ */
+

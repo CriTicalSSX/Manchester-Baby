@@ -86,6 +86,22 @@ string Baby::getPresentInstruction()
 }
 
 /*
+ * Sets a new current instruction.
+ */
+void Baby::setCurrentInstruction(string newInstruction)
+{
+	currentInstruction = newInstruction;
+}
+
+/*
+ * Sets a new present instruction.
+ */
+void Baby::setPresentInstruction(string newInstruction)
+{
+	presentInstruction = newInstruction;
+}
+
+/*
  * Reads a 32-bit number from the store. Requires the entire store to be passed in and the
  * appropriate line number (first line = 0).
  * In future, this line will not need an integer representing the line number to be passed in.
@@ -170,14 +186,6 @@ int Baby::binaryToDecimal(string binary)
 
 	return decimal;
 }
-
-
-
-
-/*
- * Displays the entire store. Called after every instruction is executed.
- * In the program, this could be every second, maybe?
- */
 
 /*
  * Jump to the address stored in present instruction
@@ -289,7 +297,7 @@ int Baby::SUB()
 {
 	int result = binaryToDecimal(accumulator) - binaryToDecimal(presentInstruction);
 
-	if (result == 2147483648 || result == -2147483648)
+	if (result < 2147483647 || result > -2147483647)
 	{
 		return OUT_OF_RANGE;
 	}
@@ -362,36 +370,44 @@ void Baby::insertInstruction(string line, int lineNumber)
 /*
  * Calls the appropriate function based on the opcode given in the line number.
  */
-void Baby::callOpcode(int lineNumber)
+int Baby::callOpcode(int lineNumber)
 {
 	int opcode = getOpcode(lineNumber);
 
 	if(opcode == 0)
 	{
 		JMP();
+		return CONTINUE;
 	}
 	else if(opcode == 1)
 	{
 		JRP();
+		return CONTINUE;
 	}
 	else if(opcode == 2)
 	{
 		LDN();
+		return CONTINUE;
 	}
 	else if(opcode == 3)
 	{
 		STO(lineNumber);
+		return CONTINUE;
 	}
 	else if(opcode == 4 || opcode == 5)
 	{
 		SUB();
+		return CONTINUE;
 	}
 	else if(opcode == 6)
 	{
 		CMP();
+		return CONTINUE;
 	}
-
-	//return STOP;
+	else
+	{
+		return STOP;
+	}
 }
 
 /*
@@ -418,7 +434,8 @@ void Baby::printState()
 }
 
 /*
- * Function that will not proceed until the user presses the spacebar or escape key.
+ * Function that will allow the program to continue if the user enters an empty value. Otherwise, ends
+ * the program.
  */
 int Baby::cont()
 {
@@ -426,13 +443,13 @@ int Baby::cont()
 
 	cin >> userInput;
 	
-	if(userInput != "")
+	if(userInput == "")
 	{
-		return END_PROGRAM;
+		return CONTINUE;
 	}
 	else
 	{
-		return CONTINUE;
+		return END_PROGRAM;
 	}
 }
 
@@ -577,3 +594,4 @@ int Baby::test()
 
 	return SUCCESS;
 }
+
