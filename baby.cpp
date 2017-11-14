@@ -443,13 +443,13 @@ int Baby::cont()
 
 	cin >> userInput;
 	
-	if(userInput == "")
+	if(userInput != "x")
 	{
-		return CONTINUE;
+		return END_PROGRAM;
 	}
 	else
 	{
-		return END_PROGRAM;
+		return CONTINUE;
 	}
 }
 
