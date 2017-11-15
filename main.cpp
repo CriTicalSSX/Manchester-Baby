@@ -40,13 +40,23 @@ int checkFile(string name)
 
 		while (getline(input, line) && fileOK == true)
 		{
+			int numberCount = 0;
 			lineCount++;
 
-			if (lineCount > 31)
+			if (lineCount > 31)					//if there are too many lines for Baby to store
 			{
 				fileOK = false;
 			}
-			else if (line.length() != 32)			//if each line does not contain 32 bits
+			
+			for (unsigned i=0; i<line.length(); i++)
+			{
+				if (line[i] == '0' || line[i] == '1')
+				{
+					numberCount++;
+				}
+			}
+			
+			if (numberCount != 32)			//if line does not contain 32 bits
 			{
 				fileOK = false;
 			}
@@ -82,6 +92,26 @@ int checkFile(string name)
 	}
 }
 
+/*
+ * Function that will allow the program to continue if the user enters an empty value. Otherwise, ends
+ * the program.
+ */
+int cont()
+{
+	string userInput = "";
+
+	cin >> userInput;
+
+	if(userInput != "x")
+	{
+		return END_PROGRAM;
+	}
+	else
+	{
+		return CONTINUE;
+	}
+}
+
 int main()
 {
 	Baby *baby = new Baby();		//A pointer to a new baby object. Refer to it as baby, not *baby
@@ -94,14 +124,17 @@ int main()
 	if (checkFile(name) == FILE_NOT_FOUND)
 	{
 		cout << name << " could not be found." << endl << endl;
+		return 1;
 	}
 	else if (checkFile(name) == BAD_FILE)
 	{
 		cout << name << " did not contain proper machine code." << endl << endl;
+		return 1;
 	}
 	else if (checkFile(name) == EXCEEDED_LENGTH)
 	{
 		cout << name << " contained too many instructions for Baby to store." << endl << endl;
+		return 1;
 	}
 	else
 	{
@@ -119,32 +152,42 @@ int main()
 		input.close();
 
 		cout << "Program successfully written to Baby." << endl << endl;
-	}
 
 //////////////////////////////////////////////////////////////////////////////////////////
 
-	bool stop = false;
+		bool stop = false;
 
-	do
-	{
-		clear();
-
-		baby->incrementCurrentInstruction();
-		baby->fetch();
-
-		baby->printState();
-
-		if(baby->decode() == STOP)
+		do
 		{
-			stop = true;
+			clear();
+
+			baby->incrementCurrentInstruction();
+			baby->fetch();
+
+			baby->printState();
+
+			if(baby->decode() == STOP)
+			{
+				stop = true;
+			}
+			else if(cont() == END_PROGRAM)
+			{
+				stop = true;
+			}
+			else if (baby->getCurrentInstructionAddress() > 30)
+			{
+				stop = true;
+			}
 		}
-		else if(baby->cont() == END_PROGRAM)
+		while (stop == false);
+
+		if (baby->getCurrentInstructionAddress() > 30)
 		{
-			stop = true;
+			cout << "Error! Reached end of program without finding STOP." << endl;
 		}
+
+		cout << "Terminating." << endl;
 	}
-	while (stop == false);
 
-	cout << "Terminating." << endl;
+	return 0;
 }
-

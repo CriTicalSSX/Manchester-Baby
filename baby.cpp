@@ -199,7 +199,7 @@ int Baby::binaryToDecimal(string binary)
 			}
 		}
 	}
-	else if (binary[binary.length() - 1] == '0' && binary.length() == 32)
+	else if (binary[binary.length() - 1] == '1' && binary.length() == 32)
 	{
 		if (binary[0] == '1')
 		{
@@ -268,8 +268,6 @@ void Baby::JMP()
 			currentInstruction[31 - i] = '1';
 		}
 	}
-
-	//return SUCCESS;
 }
 
 /*
@@ -293,8 +291,6 @@ void Baby::JRP()
 			currentInstruction[31 - i] = '1';
 		}
 	}
-
-	//return SUCCESS;
 }
 
 /*
@@ -319,8 +315,6 @@ void Baby::LDN()
 			accumulator[31 - i] = '1';
 		}
 	}
-
-	//return SUCCESS;
 }
 
 /*
@@ -334,17 +328,13 @@ void Baby::STO()
 	{
 		if (accumulator[i] == '0')
 		{
-			//store[getOperand()][i] = 0;
 			store[getCurrentInstructionAddress()][i] = 0;
 		}
 		else
 		{
-			//store[getOperand()][i] = 1;
 			store[getCurrentInstructionAddress()][i] = 1;
 		}
 	}
-
-	//return SUCCESS;
 }
 
 /*
@@ -357,7 +347,7 @@ int Baby::SUB()
 {
 	int result = binaryToDecimal(accumulator) - binaryToDecimal(presentInstruction);
 
-	if (result < 2147483647 || result > -2147483647)
+	if (result > 2147483647 || result < -2147483647)
 	{
 		return OUT_OF_RANGE;
 	}
@@ -408,8 +398,6 @@ void Baby::CMP()
 			}
 		}
 	}
-
-	//return SUCCESS;
 }
 
 void Baby::insertInstruction(string line, int lineNumber)
@@ -433,6 +421,8 @@ void Baby::insertInstruction(string line, int lineNumber)
 int Baby::decode()
 {
 	int opcode = getOpcode();
+
+	cout << "Press 'x' to execute or any other key to terminate program." << endl;
 
 	if(opcode == 0)
 	{
@@ -461,7 +451,13 @@ int Baby::decode()
 	else if(opcode == 4 || opcode == 5)
 	{
 		cout << "Performing SUB..." << endl;
-		SUB();
+
+		if (SUB() == OUT_OF_RANGE)
+		{
+			cout << "Sum went out of range!" << endl;
+			return STOP;
+		}
+
 		return CONTINUE;
 	}
 	else if(opcode == 6)
@@ -499,26 +495,6 @@ void Baby::printState()
 	cout << "Present Instruction: " << presentInstruction << " = " << binaryToDecimal(presentInstruction) << endl << endl;
 	cout << "Operand: " << getOperand() << endl;
 	cout << "Opcode: " << getOpcode() << endl;
-}
-
-/*
- * Function that will allow the program to continue if the user enters an empty value. Otherwise, ends
- * the program.
- */
-int Baby::cont()
-{
-	string userInput = "";
-
-	cin >> userInput;
-	
-	if(userInput != "x")
-	{
-		return END_PROGRAM;
-	}
-	else
-	{
-		return CONTINUE;
-	}
 }
 
 /*

@@ -62,7 +62,6 @@ public:
 
 	int decode();
 	void printState();
-	int cont();
 
 	int test();
 
