@@ -43,10 +43,8 @@ int loadFile(string fileName){
 	int loc = 0;
 
 	//while the next line does not equal null
-	while(inFile){
+	while(getline(inFile, currLine)){
 
-		//sets currLine to the next line in the file
-		getline(inFile, currLine);
 		loc = currLine.find_first_not_of("\t");
 
 		//if the first character of the line is a ; then the line can be ignored
@@ -58,7 +56,7 @@ int loadFile(string fileName){
 				//the first free bucket stores currLine
 				text_file[i] = currLine;
 				i++;
-				cout << "added to text_file\t" << currLine << endl;
+				cout << "Added to text_file\t" << currLine << endl;
 			}
 			else{
 				cout << "Error: Trying to add to a full store!\n";
@@ -73,40 +71,43 @@ int loadFile(string fileName){
 	return 0;
 }
 
-//finds the file and sets the data from the file to the var text_file[32]
-void file_search() {
-
-}
-
 int converter() {
+
   	for (int times = 0; times < 32; times++) {
-    	int length = text_file[times].size();
-    	string current = text_file[times];
-    	int end = length;    //before the ; (for defining what a comment is)
+
+    		int length = text_file[times].size();
+    		string current = text_file[times];
+    		int end = length;    //before the ; (for defining what a comment is)
     	
-    	if (current.at(0) == '#') {
+
+    		if (current.at(0) == '#') {
 			return 1;  //completed the current set
 		}
 
 		//finds out where the comments are
-    	for (int char_check = 0;char_check < length; char_check++) {
-    	  	char curr_char = current.at(char_check);
-      		if (curr_char == ';') {
-				end = char_check;
-     		}
-    	}
+    		for (int char_check = 0;char_check < length; char_check++) {
 
-    	//removes the comments
-    	text_file[times] = current.substr(0,end);
+    	  		char curr_char = current.at(char_check);
 
-    	cout << text_file[times] << endl;
+      			if (curr_char == ';') {
+					end = char_check;
+     			}
+    		}
+
+    		//removes the comments
+    		text_file[times] = current.substr(0,end);
+
+    		cout << text_file[times] << endl;
 	}
+
   return 1;
 }
 
 //scans lines searching for errors and memorising variable locations;
 string scanner() {
+
 	string error = "";
+
 	for (int line = 0;line < 32; line++) {
 
 		//if it finds the # (denoting a null line) it returns scan complete
@@ -118,17 +119,19 @@ string scanner() {
 		int pos = 0;
 		size_t found = text_file[line].find(':');
 		int start = 0;
+
 		if (found!=string::npos) {
 			pos = (text_file[line].find_first_of(':')+1);
 		}
-
 
 		bool correct = false;
 
 		//checks that the opcode matches the instruction set
 		start = text_file[line].find_first_not_of(" \t",pos);
 		string holder = text_file[line].substr(start,3);
+
 		for (int times = 0; times < 8 ; times++) {
+
 			if (holder == instructions[times][0]) {
 				correct = true;
 			}
@@ -153,7 +156,7 @@ int main() {
   	}
 
   	//fills data (remove later)
-	text_file[0] = "          VAR 0       ; Declare 32-bit variable to fill space ";
+	/*text_file[0] = "          VAR 0       ; Declare 32-bit variable to fill space ";
 	text_file[1] = "START:    LDN NUM01   ; Copy variable to accumulator (negated)";
 	text_file[2] = "          SUB NUM02   ; Subtract variable from accumulator to get sum (negated)";
 	text_file[3] = "          STO MYSUM   ; Store accumulator to variable - saves answer";
@@ -162,11 +165,19 @@ int main() {
 	text_file[6] = "END:      STP         ; Stop processor";
 	text_file[7] = "NUM01:    VAR 1025    ; Declare 32-bit variable";
 	text_file[8] = "NUM02:    VAR 621     ; Declare 32-bit variable";
-	text_file[9] = "MYSUM:    VAR 0       ; Declare 32-bit variable";
+	text_file[9] = "MYSUM:    VAR 0       ; Declare 32-bit variable";*/
 
 	string return_error = "";
 
-	file_search();
+	string fileName;
+
+	cout << "\nPlease enter the address of the assembly code file\n";
+	cin >> fileName;
+
+	loadFile(fileName);
+
+	cout << "\nFinished loading.\n\n";
+
 	converter();
     return_error = scanner();
     cout << return_error << endl;
