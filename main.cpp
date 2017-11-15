@@ -21,6 +21,11 @@
 
 using namespace std;
 
+void clear()
+  {
+  cout << string( 100, '\n' );
+  }
+
 /*
  *	Checks whether a user's file is OK
  */
@@ -103,7 +108,7 @@ int main()
 		//Actually inserting the file into the store
 		string line;
 		ifstream input(name);
-		int lineNumber = 1;
+		int lineNumber = 0;
 
 		while (getline(input, line))
 		{
@@ -119,28 +124,26 @@ int main()
 //////////////////////////////////////////////////////////////////////////////////////////
 
 	bool stop = false;
-	int lineNumber = 1;
 
-	while (stop == false)
+	do
 	{
-		baby->setCurrentInstruction(baby->readLineFromStore(lineNumber));
+		clear();
 
-		baby->setPresentInstruction(baby->getCurrentInstruction());
+		baby->incrementCurrentInstruction();
+		baby->fetch();
 
-		if(baby->callOpcode(lineNumber) == STOP)
-		{
-			stop = true;
-		}
-	
 		baby->printState();
 
-		if(baby->cont() == END_PROGRAM)
+		if(baby->decode() == STOP)
 		{
 			stop = true;
 		}
-
-		lineNumber++;
+		else if(baby->cont() == END_PROGRAM)
+		{
+			stop = true;
+		}
 	}
+	while (stop == false);
 
 	cout << "Terminating." << endl;
 }

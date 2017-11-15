@@ -40,25 +40,27 @@ public:
 
 	string getAccumulator();
 	string getCurrentInstruction();
+	int getCurrentInstructionAddress();
 	string getPresentInstruction();
-	void setPresentInstruction(string NewInstruction);
+	void fetch();
 	void setCurrentInstruction(string NewInstruction);
+	void incrementCurrentInstruction();
 
 	string readLineFromStore(int lineNumber);
-	int getOperand(int lineNumber);
-	int getOpcode(int lineNumber);
+	int getOperand();
+	int getOpcode();
 	int binaryToDecimal(string binary);
 
 	void JMP();
 	void JRP();
 	void LDN();
-	void STO(int operand);
+	void STO();
 	int SUB();
 	void CMP();
 
 	void insertInstruction(string line, int lineNumber);
 
-	int callOpcode(int lineNumber);
+	int decode();
 	void printState();
 	int cont();
 

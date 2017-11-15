@@ -69,12 +69,17 @@ string Baby::getAccumulator()
 	return accumulator;
 }
 
-/*
- * Returns the current value of the current instruction register.
- */
 string Baby::getCurrentInstruction()
 {
 	return currentInstruction;
+}
+
+/*
+ * Returns the current value of the current instruction register.
+ */
+int Baby::getCurrentInstructionAddress()
+{
+	return binaryToDecimal(currentInstruction);
 }
 
 /*
@@ -94,11 +99,34 @@ void Baby::setCurrentInstruction(string newInstruction)
 }
 
 /*
+ * Increment current instruction by 1
+ */
+void Baby::incrementCurrentInstruction()
+{
+	for (unsigned i=0; i<currentInstruction.length(); i++)
+	{
+		if (currentInstruction[i] == '0')
+		{
+			currentInstruction[i] = '1';
+
+			for (int j=i; j>-0; j--)
+			{
+				currentInstruction[j-1] = '0';
+			}
+
+			break;
+		}
+	}
+}
+
+
+/*
  * Sets a new present instruction.
  */
-void Baby::setPresentInstruction(string newInstruction)
+void Baby::fetch()
 {
-	presentInstruction = newInstruction;
+	int lineNumber = binaryToDecimal(currentInstruction);
+	presentInstruction = readLineFromStore(lineNumber);
 }
 
 /*
@@ -125,13 +153,13 @@ string Baby::readLineFromStore(int lineNumber)
  * This function may be better off just reading a string instruction passed in from the
  * current instruction register, so subject to change.
  */
-int Baby::getOpcode(int lineNumber)
+int Baby::getOpcode()
 {
 	string opcode = "";
 
 	for (int i=13; i<16; i++)
 	{
-		opcode += to_string(store[lineNumber][i]);		//Obtains the entire store line as string
+		opcode += presentInstruction[i];		//Obtains the entire store line as string
 	}
 
 	return binaryToDecimal(opcode);
@@ -142,13 +170,13 @@ int Baby::getOpcode(int lineNumber)
  * This function may be better off just reading a string instruction passed in from the
  * current instruction register, so subject to change.
  */
-int Baby::getOperand(int lineNumber)
+int Baby::getOperand()
 {
 	string operand = "";
 
 	for (int i=0; i<5; i++)
 	{
-		operand += to_string(store[lineNumber][i]);
+		operand += presentInstruction[i];
 	}
 
 	return binaryToDecimal(operand);		//Retrieves the value 0-31 for the operand
@@ -161,7 +189,7 @@ int Baby::binaryToDecimal(string binary)
 {
 	int decimal = 0;
 
-	if (binary[31] == '0')
+	if (binary[binary.length() - 1] == '0' || binary.length() < 32)
 	{
 		for (unsigned int i=0; i<binary.length(); i++)
 		{
@@ -171,9 +199,41 @@ int Baby::binaryToDecimal(string binary)
 			}
 		}
 	}
-	else
+	else if (binary[binary.length() - 1] == '0' && binary.length() == 32)
 	{
-		for (unsigned int i=0; i<binary.length()-1; i++)
+		if (binary[0] == '1')
+		{
+			binary[0] ='0';
+		}
+		else
+		{
+			for (unsigned int i=0; i<binary.length(); i++)
+			{
+				if (binary[i] == '1')
+				{
+					binary[i] = '0';
+
+					for (int j=0; j>-1; j--)
+					{
+						binary[i] = '1';
+					}
+
+					break;
+				}
+			}
+		}
+
+		for (unsigned i=0; i<binary.length(); i++)
+		{
+			if (binary[i] == '0')
+			{
+				binary[i] = '1';
+			}
+			else
+				binary[i] = '0';
+		}
+
+		for (unsigned int i=0; i<binary.length(); i++)
 		{
 			if (binary[i] == '1')
 			{
@@ -192,10 +252,10 @@ int Baby::binaryToDecimal(string binary)
  */
 void Baby::JMP()
 {
-	currentInstruction = "";
+	int currentInstructionValue = binaryToDecimal(currentInstruction);
+	string binary = bitset<32>(currentInstructionValue).to_string();
 
-	int presentInstructionValue = binaryToDecimal(presentInstruction);
-	string binary = bitset<32>(presentInstructionValue).to_string();
+	currentInstruction = "00000000000000000000000000000000";
 
 	for (unsigned int i=0; i<binary.length(); i++)
 	{
@@ -246,6 +306,8 @@ void Baby::LDN()
 	int negativePresentInstruction = binaryToDecimal(presentInstruction) * -1;
 	string negativeBinary = bitset<32>(negativePresentInstruction).to_string();
 
+	accumulator = "00000000000000000000000000000000";
+
 	for (unsigned int i=0; i<negativeBinary.length(); i++)
 	{
 		if (negativeBinary[i] == '0')
@@ -266,21 +328,19 @@ void Baby::LDN()
  * specified location in the store. In the test function, this changes the first line of
  * the store (run the program and see).
  */
-void Baby::STO(int operand)
+void Baby::STO()
 {
-	int currentInstructionDecimal = binaryToDecimal(currentInstruction);
-
 	for (int i=0; i<32; i++)
 	{
 		if (accumulator[i] == '0')
 		{
-			store[operand][i] = 0;
-			store[currentInstructionDecimal][i] = 0;
+			//store[getOperand()][i] = 0;
+			store[getCurrentInstructionAddress()][i] = 0;
 		}
 		else
 		{
-			store[operand][i] = 1;
-			store[currentInstructionDecimal][i] = 1;
+			//store[getOperand()][i] = 1;
+			store[getCurrentInstructionAddress()][i] = 1;
 		}
 	}
 
@@ -370,37 +430,43 @@ void Baby::insertInstruction(string line, int lineNumber)
 /*
  * Calls the appropriate function based on the opcode given in the line number.
  */
-int Baby::callOpcode(int lineNumber)
+int Baby::decode()
 {
-	int opcode = getOpcode(lineNumber);
+	int opcode = getOpcode();
 
 	if(opcode == 0)
 	{
+		cout << "Performing JMP..." << endl;
 		JMP();
 		return CONTINUE;
 	}
 	else if(opcode == 1)
 	{
+		cout << "Performing JRP..." << endl;
 		JRP();
 		return CONTINUE;
 	}
 	else if(opcode == 2)
 	{
+		cout << "Performing LDN..." << endl;
 		LDN();
 		return CONTINUE;
 	}
 	else if(opcode == 3)
 	{
-		STO(lineNumber);
+		cout << "Performing STO..." << endl;
+		STO();
 		return CONTINUE;
 	}
 	else if(opcode == 4 || opcode == 5)
 	{
+		cout << "Performing SUB..." << endl;
 		SUB();
 		return CONTINUE;
 	}
 	else if(opcode == 6)
 	{
+		cout << "Performing CMP..." << endl;
 		CMP();
 		return CONTINUE;
 	}
@@ -428,9 +494,11 @@ void Baby::printState()
 		cout << endl;
 	}
 
-	cout << endl << "Accumulator: " << accumulator << endl;
-	cout << "Current Instruction: " << currentInstruction << endl;
-	cout << "Present Instruction: " << presentInstruction << endl << endl;
+	cout << endl << "Accumulator: " << accumulator << " = " << binaryToDecimal(accumulator) << endl;
+	cout << "Current Instruction: " << currentInstruction << " = " << binaryToDecimal(currentInstruction) << endl;
+	cout << "Present Instruction: " << presentInstruction << " = " << binaryToDecimal(presentInstruction) << endl << endl;
+	cout << "Operand: " << getOperand() << endl;
+	cout << "Opcode: " << getOpcode() << endl;
 }
 
 /*
@@ -468,20 +536,20 @@ int Baby::test()
 	cout << "Testing STO function..." << endl;
 
 	cout << "Output of first line of store is " << readLineFromStore(0) << endl;
-	cout << "Operand = " << getOperand(0) << endl;
-	cout << "Opcode = " << getOpcode(0) << endl;
+	cout << "Operand = " << getOperand() << endl;
+	cout << "Opcode = " << getOpcode() << endl;
 
 	cout << endl << "Changing first line of store..." << endl;
 
 	accumulator = "00111001011111010010001000010101";	//Random value of the accumulator
-	STO(0);
+	STO();
 
 	cout << endl << "STORE AFTER STO OPERATION:" << endl;
 	printState();
 
 	cout << endl << "Output of first line of store is " << readLineFromStore(0) << endl;
-	cout << "Operand = " << getOperand(0) << endl;
-	cout << "Opcode = " << getOpcode(0) << endl << endl;
+	cout << "Operand = " << getOperand() << endl;
+	cout << "Opcode = " << getOpcode() << endl << endl;
 	cout << "STO test complete!" << endl << endl;
 
 
