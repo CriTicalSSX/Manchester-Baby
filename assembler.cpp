@@ -26,6 +26,53 @@ string instructions[8][3] = {
 {"STP", "n", "111"},
 };
 
+//loads a file into the array to be processed
+int loadFile(string fileName){
+
+	//opens a file input stream for the given file
+	ifstream inFile(fileName);
+
+	//checks the input file exists
+	if(!inFile){
+		cout << "Error: File can't be opened!\n";
+		return 1;
+	}
+	
+	string currLine;
+	int i = 0;
+	int loc = 0;
+
+	//while the next line does not equal null
+	while(inFile){
+
+		//sets currLine to the next line in the file
+		getline(inFile, currLine);
+		loc = currLine.find_first_not_of("\t");
+
+		//if the first character of the line is a ; then the line can be ignored
+		if(currLine.at(loc) != (';')){
+
+			//checks there is space in the store before adding
+			if(i < 32){
+				
+				//the first free bucket stores currLine
+				text_file[i] = currLine;
+				i++;
+				cout << "added to text_file\t" << currLine << endl;
+			}
+			else{
+				cout << "Error: Trying to add to a full store!\n";
+				return 1;
+			}
+		}
+	}
+
+	//closes the file input stream
+	inFile.close();
+
+	return 0;
+}
+
 //finds the file and sets the data from the file to the var text_file[32]
 void file_search() {
 
