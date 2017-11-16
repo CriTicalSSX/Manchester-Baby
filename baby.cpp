@@ -38,6 +38,7 @@ Baby::Baby()
 	accumulator = "00000000000000000000000000000000";
 	currentInstruction = "00000000000000000000000000000000";
 	presentInstruction = "00000000000000000000000000000000";
+	register4 = "00000000000000000000000000000000";
 }
 
 /*
@@ -57,6 +58,7 @@ Baby::~Baby()
 	accumulator = "";
 	currentInstruction = "";
 	presentInstruction = "";
+	register4 = "";
 
 	cout << "Shutting Baby down..." << endl;
 }
@@ -128,7 +130,7 @@ int Baby::getOpcode()
 {
 	string opcode = "";
 
-	for (int i=13; i<16; i++)
+	for (int i=13; i<17; i++)
 	{
 		opcode += presentInstruction[i];		//Obtains the entire store line as string
 	}
@@ -223,8 +225,8 @@ int Baby::binaryToDecimal(string binary)
  */
 void Baby::JMP()
 {
-	int currentInstructionValue = binaryToDecimal(currentInstruction);
-	string binary = bitset<32>(currentInstructionValue).to_string();
+	int presentInstructionValue = binaryToDecimal(presentInstruction);
+	string binary = bitset<32>(presentInstructionValue).to_string();
 
 	currentInstruction = "00000000000000000000000000000000";
 
@@ -371,6 +373,95 @@ void Baby::CMP()
 	}
 }
 
+int Baby::ADD()
+{
+	int result = binaryToDecimal(accumulator) + binaryToDecimal(presentInstruction);
+
+		if (result > 2147483647 || result < -2147483647)
+		{
+			return OUT_OF_RANGE;
+		}
+
+		string binary = bitset<32>(result).to_string();
+
+		for (unsigned int i=0; i<binary.length(); i++)
+		{
+			if (binary[i] == '0')
+			{
+				accumulator[31 - i] = '0';
+			}
+			else
+			{
+				accumulator[31 - i] = '1';
+			}
+		}
+
+		return SUCCESS;
+}
+
+
+int Baby::MUL()
+{
+	int result = binaryToDecimal(accumulator) * binaryToDecimal(presentInstruction);
+
+	if (result > 2147483647 || result < -2147483647)
+	{
+		return OUT_OF_RANGE;
+	}
+
+	string binary = bitset<32>(result).to_string();
+
+	for (unsigned int i=0; i<binary.length(); i++)
+	{
+		if (binary[i] == '0')
+		{
+			accumulator[31 - i] = '0';
+		}
+		else
+		{
+			accumulator[31 - i] = '1';
+		}
+	}
+
+	return SUCCESS;
+}
+
+int Baby::DIV()
+{
+	int result = binaryToDecimal(accumulator) / binaryToDecimal(presentInstruction);
+
+	if (result > 2147483647 || result < -2147483647)
+	{
+		return OUT_OF_RANGE;
+	}
+
+	string binary = bitset<32>(result).to_string();
+
+	for (unsigned int i=0; i<binary.length(); i++)
+	{
+		if (binary[i] == '0')
+		{
+			accumulator[31 - i] = '0';
+		}
+		else
+		{
+			accumulator[31 - i] = '1';
+		}
+	}
+
+	return SUCCESS;
+}
+
+void Baby::MVF()
+{
+	register4 = currentInstruction;
+}
+
+void Baby::MVT()
+{
+	currentInstruction = register4;
+}
+
 void Baby::insertInstruction(string line, int lineNumber)
 {
 	for (unsigned i=0; i<line.length(); i++)
@@ -437,9 +528,54 @@ int Baby::decode()
 		CMP();
 		return CONTINUE;
 	}
-	else
+	else if (opcode == 7)
 	{
 		return STOP;
+	}
+	else if (opcode == 8 || opcode == 9)
+	{
+		cout << "Performing ADD..." << endl;
+		if (ADD() == OUT_OF_RANGE)
+		{
+			cout << "Sum went out of range!" << endl;
+			return STOP;
+		}
+
+		return CONTINUE;
+	}
+	else if (opcode == 10 || opcode == 11)
+	{
+		cout << "Performing MUL..." << endl;
+		if (MUL() == OUT_OF_RANGE)
+		{
+			cout << "Multiplication calculation went out of range!" << endl;
+			return STOP;
+		}
+
+		return CONTINUE;
+	}
+	else if (opcode == 12 || opcode == 13)
+	{
+		cout << "Performing DIV..." << endl;
+		if (DIV() == OUT_OF_RANGE)
+		{
+			cout << "Division calculation went out of range!" << endl;
+			return STOP;
+		}
+
+		return CONTINUE;
+	}
+	else if (opcode == 14)
+	{
+		cout << "Performing MVF..." << endl;
+		MVF();
+		return CONTINUE;
+	}
+	else
+	{
+		cout << "Performing MVT..." << endl;
+		MVT();
+		return CONTINUE;
 	}
 }
 
@@ -463,7 +599,8 @@ void Baby::printState()
 
 	cout << endl << "Accumulator: " << accumulator << " = " << binaryToDecimal(accumulator) << endl;
 	cout << "Current Instruction: " << currentInstruction << " = " << binaryToDecimal(currentInstruction) << endl;
-	cout << "Present Instruction: " << presentInstruction << " = " << binaryToDecimal(presentInstruction) << endl << endl;
+	cout << "Present Instruction: " << presentInstruction << " = " << binaryToDecimal(presentInstruction) << endl;
+	cout << "Register 4: " << register4 << " = " << binaryToDecimal(register4) << endl << endl;
 	cout << "Operand: " << getOperand() << endl;
 	cout << "Opcode: " << getOpcode() << endl;
 }

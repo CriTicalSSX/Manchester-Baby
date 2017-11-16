@@ -22,9 +22,28 @@
 using namespace std;
 
 void clear()
-  {
-  cout << string( 100, '\n' );
-  }
+{
+	cout << string( 100, '\n' );
+}
+
+void displayInstructionSet()
+{
+	clear();
+
+	cout << "OPCODE\t\tFUNCTION\tDESCRIPTION" << endl;
+	cout << "0000\t\tJMP\t\tJumps to instruction stored in present instruction register" << endl;
+	cout << "1000\t\tJRP\t\tJumps to instruction stored in present instruction register + value of current instruction register" << endl;
+	cout << "0100\t\tLDN\t\tNegates value in present instruction register and stores it in accumulator register" << endl;
+	cout << "1100\t\tSTO\t\tStore the number in the accumulator register in the address pointed to by the current instruction register" << endl;
+	cout << "0010/1010\t\tSUB\t\tSubtract value of present instruction register from accumulator register and store in accumulator register" << endl;
+	cout << "0110\t\tCMP\t\tSkips the next instruction if the accumulator is negative" << endl;
+	cout << "1110\t\tSTP\t\tStops execution of any further instructions" << endl;
+	cout << "0001/1001\t\tADD\t\tAdd value of present instruction register to accumulator register and store in accumulator register" << endl;
+	cout << "0101/1101\t\tMUL\t\tMultiply value of present instruction register by value of accumulator register and store in accumulator register" << endl;
+	cout << "0011/1011\t\tDIV\t\tDivide value of accumulator register by present instruction register and store in accumulator register" << endl;
+	cout << "0111\t\tMVF\t\tMoves instruction in current instruction register to Register 4" << endl;
+	cout << "1111\t\tMVT\t\tMoves instruction in Register 4 to current instruction register" << endl << endl;
+}
 
 /*
  *	Checks whether a user's file is OK
@@ -116,9 +135,51 @@ int main()
 {
 	Baby *baby = new Baby();		//A pointer to a new baby object. Refer to it as baby, not *baby
 
+	baby->printState();
+
+	cout << endl << "This is the Manchester Baby!" << endl;
+
+	char input;
+	while (input != '1')
+	{
+		cout << "Choose an option:" << endl;
+		cout << "1. Load a machine code program into Baby" << endl;
+		cout << "2. View Baby's instruction set" << endl;
+		cout << "3. Quit" << endl;
+
+		cin >> input;
+
+		while (input != '1' && input != '2' && input != '3')
+		{
+			cout << "Error. Please enter either 1, 2 or 3." << endl;
+
+			if (!cin)
+			{
+				cin.clear();
+				cin.ignore();
+			}
+
+			cin >> input;
+		}
+
+		cin.clear();
+		cin.ignore();
+
+		if (input == '2')
+		{
+			displayInstructionSet();
+		}
+
+		if (input == '3')
+		{
+			clear();
+			return 0;
+		}
+	}
+
 	//Asking user for file name to open
 	string name;
-	cout << "Enter the name of the machine code file for Baby to run." << endl;
+	cout << endl << "Enter the name of the machine code file for Baby to run." << endl;
 	getline(cin, name);
 
 	if (checkFile(name) == FILE_NOT_FOUND)

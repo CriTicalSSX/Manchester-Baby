@@ -33,6 +33,7 @@ private:
 	string accumulator;				//Accumulator register
 	string currentInstruction;		//Current instruction register
 	string presentInstruction;		//Present instruction register
+	string register4;				//Second data register
 
 //See baby.cpp for details of each function
 public:
@@ -53,6 +54,11 @@ public:
 	void STO();
 	int SUB();
 	void CMP();
+	int ADD();
+	int MUL();
+	int DIV();
+	void MVF();
+	void MVT();
 
 	void insertInstruction(string line, int lineNumber);
 
