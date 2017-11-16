@@ -1,3 +1,12 @@
+/*  AC21009 assignment 3
+    Manchester Baby Assembler
+
+    Will Lockett
+    Dylan Keningale
+    Sam Glendenning
+    Matthew Daldry
+*/
+
 #include <stdlib.h>
 #include <fstream>
 #include <iostream>
@@ -98,9 +107,7 @@ int converter() {
     		text_file[times] = current.substr(0,end);
 
     		cout << text_file[times] << endl;
-	}
-
-  return 1;
+	}		
 }
 
 //scans lines searching for errors and memorising variable locations;
@@ -145,7 +152,17 @@ string scanner() {
 			error += holder;
 			return error;
 		}
+
+		cout << text_file[line] << "\n";
 	}
+}
+
+//converts the assembly code into machine code line by line
+void convertToBinary(){
+}
+
+//writes the final machine code to a text file that can be read by the baby
+void writeFile(){
 }
 
 int main() {
@@ -154,18 +171,6 @@ int main() {
   	for (int times = 0; times < 32; times++) {
   		text_file[times] = "#";
   	}
-
-  	//fills data (remove later)
-	/*text_file[0] = "          VAR 0       ; Declare 32-bit variable to fill space ";
-	text_file[1] = "START:    LDN NUM01   ; Copy variable to accumulator (negated)";
-	text_file[2] = "          SUB NUM02   ; Subtract variable from accumulator to get sum (negated)";
-	text_file[3] = "          STO MYSUM   ; Store accumulator to variable - saves answer";
-	text_file[4] = "          LDN MYSUM   ; Copy variable to accumulator (negated)";
-	text_file[5] = "          STw MYSUM   ; Store accumulator to variable";
-	text_file[6] = "END:      STP         ; Stop processor";
-	text_file[7] = "NUM01:    VAR 1025    ; Declare 32-bit variable";
-	text_file[8] = "NUM02:    VAR 621     ; Declare 32-bit variable";
-	text_file[9] = "MYSUM:    VAR 0       ; Declare 32-bit variable";*/
 
 	string return_error = "";
 
@@ -179,7 +184,10 @@ int main() {
 	cout << "\nFinished loading.\n\n";
 
 	converter();
-    return_error = scanner();
-    cout << return_error << endl;
+
+	cout << "\nconverting finished\n";
+
+	return_error = scanner();
+    	cout << return_error << endl;
 }
 
