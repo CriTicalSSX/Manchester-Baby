@@ -34,10 +34,12 @@ private:
 	string currentInstruction;		//Current instruction register
 	string presentInstruction;		//Present instruction register
 	string register4;				//Second data register
+	int memorySize;				//Number of lines held in store
 
 //See baby.cpp for details of each function
 public:
 	Baby();
+	Baby(int size);
 
 	void fetch();
 	int getCurrentInstructionAddress();
@@ -71,4 +73,5 @@ public:
 };
 
 #endif /* BABY_H_ */
+
 
