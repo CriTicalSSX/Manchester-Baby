@@ -38,12 +38,8 @@ private:
 public:
 	Baby();
 
-	string getAccumulator();
-	string getCurrentInstruction();
-	int getCurrentInstructionAddress();
-	string getPresentInstruction();
 	void fetch();
-	void setCurrentInstruction(string NewInstruction);
+	int getCurrentInstructionAddress();
 	void incrementCurrentInstruction();
 
 	string readLineFromStore(int lineNumber);

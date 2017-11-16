@@ -62,40 +62,11 @@ Baby::~Baby()
 }
 
 /*
- * Returns the current value of the accumulator register.
- */
-string Baby::getAccumulator()
-{
-	return accumulator;
-}
-
-string Baby::getCurrentInstruction()
-{
-	return currentInstruction;
-}
-
-/*
  * Returns the current value of the current instruction register.
  */
 int Baby::getCurrentInstructionAddress()
 {
 	return binaryToDecimal(currentInstruction);
-}
-
-/*
- * Returns the current value of the present instruction register.
- */
-string Baby::getPresentInstruction()
-{
-	return presentInstruction;
-}
-
-/*
- * Sets a new current instruction.
- */
-void Baby::setCurrentInstruction(string newInstruction)
-{
-	currentInstruction = newInstruction;
 }
 
 /*
