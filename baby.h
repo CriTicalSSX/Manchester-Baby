@@ -29,7 +29,7 @@ using namespace std;
 class Baby
 {
 private:
-	int store[32][32];				//Baby's memory store
+	bool store[32][32];				//Baby's memory store
 	string accumulator;				//Accumulator register
 	string currentInstruction;		//Current instruction register
 	string presentInstruction;		//Present instruction register
