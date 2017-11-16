@@ -27,18 +27,37 @@ using namespace std;
  */
 Baby::Baby()
 {
-	for (int i=0; i<32; i++)
+	accumulator = "00000000000000000000000000000000";
+	currentInstruction = "00000000000000000000000000000000";
+	presentInstruction = "00000000000000000000000000000000";
+	register4 = "00000000000000000000000000000000";
+	memorySize = 32;
+
+	for (int i=0; i<memorySize; i++)
 	{
 		for (int j=0; j<32; j++)
 		{
 			store[i][j] = 0;
 		}
 	}
+}
 
+//Alternate constructor for Baby. Allows for different sizes of memory.
+Baby::Baby(int size)
+{
 	accumulator = "00000000000000000000000000000000";
 	currentInstruction = "00000000000000000000000000000000";
 	presentInstruction = "00000000000000000000000000000000";
 	register4 = "00000000000000000000000000000000";
+	memorySize = size;
+
+	for (int i=0; i<memorySize; i++)
+	{
+		for (int j=0; j<32; j++)
+		{
+			store[i][j] = 0;
+		}
+	}
 }
 
 /*
@@ -47,7 +66,7 @@ Baby::Baby()
  */
 Baby::~Baby()
 {
-	for (int i=0; i<32; i++)
+	for (int i=0; i<memorySize; i++)
 	{
 		for (int j=0; j<32; j++)
 		{
@@ -59,6 +78,7 @@ Baby::~Baby()
 	currentInstruction = "";
 	presentInstruction = "";
 	register4 = "";
+	memorySize = 0;
 
 	cout << "Shutting Baby down..." << endl;
 }
@@ -746,4 +766,5 @@ int Baby::test()
 
 	return SUCCESS;
 }
+
 

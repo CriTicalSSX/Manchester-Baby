@@ -48,7 +48,7 @@ void displayInstructionSet()
 /*
  *	Checks whether a user's file is OK
  */
-int checkFile(string name)
+int checkFile(string name, int memorySize)
 {
 	ifstream input(name);
 	if (input.is_open())		//if file can be opened
@@ -62,7 +62,7 @@ int checkFile(string name)
 			int numberCount = 0;
 			lineCount++;
 
-			if (lineCount > 31)					//if there are too many lines for Baby to store
+			if (lineCount > (memorySize-1))					//if there are too many lines for Baby to store
 			{
 				fileOK = false;
 			}
@@ -93,7 +93,7 @@ int checkFile(string name)
 
 		input.close();
 
-		if (lineCount > 31)
+		if (lineCount > (memorySize-1))
 		{
 			return EXCEEDED_LENGTH;
 		}
@@ -133,25 +133,23 @@ int cont()
 
 int main()
 {
-	Baby *baby = new Baby();		//A pointer to a new baby object. Refer to it as baby, not *baby
-
-	baby->printState();
-
 	cout << endl << "This is the Manchester Baby!" << endl;
 
 	char input;
+	int sizeInput = 32;
 	while (input != '1')
 	{
 		cout << "Choose an option:" << endl;
 		cout << "1. Load a machine code program into Baby" << endl;
 		cout << "2. View Baby's instruction set" << endl;
-		cout << "3. Quit" << endl;
+		cout << "3. Change Baby's memory size" << endl;
+		cout << "4. Quit" << endl;
 
 		cin >> input;
 
-		while (input != '1' && input != '2' && input != '3')
+		while (input != '1' && input != '2' && input != '3' && input != '4')
 		{
-			cout << "Error. Please enter either 1, 2 or 3." << endl;
+			cout << "Error. Please enter either 1, 2, 3 or 4." << endl;
 
 			if (!cin)
 			{
@@ -172,29 +170,59 @@ int main()
 
 		if (input == '3')
 		{
+			cout << "What size of memory would you like?" << endl;
+			cout << "Please enter a size between 32 and 256 lines." << endl;
+						
+			cin >> sizeInput;
+
+			while(!cin || sizeInput < 32 || sizeInput > 256)
+			{
+				if(!cin)
+				{
+					cout << "Error. Please enter an integer value." << endl;
+				
+					cin.clear();
+					cin.ignore();
+				}
+				else
+				{
+					cout << "Error. Please enter a size between 32 and 256 lines." << endl;
+				}
+
+			cin >> sizeInput;
+			}
+		}
+
+		if (input == '4')
+		{
 			clear();
 			return 0;
 		}
 	}
+
+	Baby *baby = new Baby(sizeInput);
 
 	//Asking user for file name to open
 	string name;
 	cout << endl << "Enter the name of the machine code file for Baby to run." << endl;
 	getline(cin, name);
 
-	if (checkFile(name) == FILE_NOT_FOUND)
+	if (checkFile(name, sizeInput) == FILE_NOT_FOUND)
 	{
 		cout << name << " could not be found." << endl << endl;
+		delete baby;
 		return 1;
 	}
-	else if (checkFile(name) == BAD_FILE)
+	else if (checkFile(name, sizeInput) == BAD_FILE)
 	{
 		cout << name << " did not contain proper machine code." << endl << endl;
+		delete baby;
 		return 1;
 	}
-	else if (checkFile(name) == EXCEEDED_LENGTH)
+	else if (checkFile(name, sizeInput) == EXCEEDED_LENGTH)
 	{
 		cout << name << " contained too many instructions for Baby to store." << endl << endl;
+		delete baby;
 		return 1;
 	}
 	else
@@ -250,5 +278,7 @@ int main()
 		cout << "Terminating." << endl;
 	}
 
+	delete baby;
 	return 0;
 }
+
