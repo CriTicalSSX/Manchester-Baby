@@ -163,6 +163,18 @@ void convertToBinary(){
 
 //writes the final machine code to a text file that can be read by the baby
 void writeFile(){
+
+	string fileName = "Out.txt";
+
+	//opens a file output stream for the given file
+	ofstream outFile(fileName);
+	
+	for(int i = 0; i < 32; i++){
+		outFile << text_file[i] << "\n";	
+	}
+
+	//closes the file output stream
+	outFile.close();
 }
 
 int main() {
@@ -176,7 +188,7 @@ int main() {
 
 	string fileName;
 
-	cout << "\nPlease enter the address of the assembly code file\n";
+	cout << "\nPlease enter the address of the assembly code file:\n";
 	cin >> fileName;
 
 	loadFile(fileName);
@@ -185,9 +197,13 @@ int main() {
 
 	converter();
 
-	cout << "\nconverting finished\n";
+	cout << "\nconverting finished.\n";
 
 	return_error = scanner();
     	cout << return_error << endl;
+
+	writeFile();
+	
+	cout << "\nWriting finished.\n";
 }
 
