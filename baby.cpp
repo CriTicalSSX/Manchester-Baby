@@ -607,7 +607,7 @@ void Baby::printState()
 {
 	cout << "Store:" << endl;
 
-	for (int i=0; i<32; i++)
+	for (int i=0; i<memorySize; i++)
 	{
 		for (int j=0; j<32; j++)
 		{
