@@ -85,7 +85,10 @@ int checkFile(string name, int memorySize)
 				{
 					if (line[i] != '0' && line[i] != '1')			//if any character is not equal to a 0 or a 1
 					{
-						fileOK = false;
+						if (i < 32)
+						{
+							fileOK = false;
+						}
 					}
 				}
 			}
