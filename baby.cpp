@@ -292,22 +292,24 @@ void Baby::JRP()
  */
 void Baby::LDN()
 {
-	int negativePresentInstruction = binaryToDecimal(presentInstruction) * -1;
-	string negativeBinary = bitset<32>(negativePresentInstruction).to_string();
+	int lineNumber = getOperand();
+		string binaryValue = readLineFromStore(lineNumber);
+		int negativeDecimalValue = binaryToDecimal(binaryValue) *-1;
+		string negativeBinary = bitset<32>(negativeDecimalValue).to_string();
 
-	accumulator = "00000000000000000000000000000000";
+		accumulator = "00000000000000000000000000000000";
 
-	for (unsigned int i=0; i<negativeBinary.length(); i++)
-	{
-		if (negativeBinary[i] == '0')
+		for (unsigned int i=0; i<negativeBinary.length(); i++)
 		{
-			accumulator[31 - i] = '0';
+			if (negativeBinary[i] == '0')
+			{
+				accumulator[31 - i] = '0';
+			}
+			else
+			{
+				accumulator[31 - i] = '1';
+			}
 		}
-		else
-		{
-			accumulator[31 - i] = '1';
-		}
-	}
 }
 
 /*
@@ -317,15 +319,17 @@ void Baby::LDN()
  */
 void Baby::STO()
 {
+	int lineNumber = getOperand();
+
 	for (int i=0; i<32; i++)
 	{
 		if (accumulator[i] == '0')
 		{
-			store[getCurrentInstructionAddress()][i] = 0;
+			store[lineNumber][i] = 0;
 		}
 		else
 		{
-			store[getCurrentInstructionAddress()][i] = 1;
+			store[lineNumber][i] = 1;
 		}
 	}
 }
@@ -338,7 +342,9 @@ void Baby::STO()
  */
 int Baby::SUB()
 {
-	int result = binaryToDecimal(accumulator) - binaryToDecimal(presentInstruction);
+	int lineNumber = getOperand();
+	string binaryValue = readLineFromStore(lineNumber);
+	int result = binaryToDecimal(accumulator) - binaryToDecimal(binaryValue);
 
 	if (result > 2147483647 || result < -2147483647)
 	{

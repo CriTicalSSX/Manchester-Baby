@@ -29,12 +29,12 @@ using namespace std;
 class Baby
 {
 private:
-	bool store[32][32];				//Baby's memory store
+	bool store[256][32];			//Baby's memory store
 	string accumulator;				//Accumulator register
 	string currentInstruction;		//Current instruction register
 	string presentInstruction;		//Present instruction register
 	string register4;				//Second data register
-	int memorySize;				//Number of lines held in store
+	int memorySize;					//Number of lines held in store
 
 //See baby.cpp for details of each function
 public:
@@ -73,5 +73,4 @@ public:
 };
 
 #endif /* BABY_H_ */
-
 
