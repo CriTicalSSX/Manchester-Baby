@@ -10,12 +10,7 @@
  * Baby source file
  */
 
-#include <iostream>
-#include <bitset>
 #include "baby.h"
-#include <stdlib.h>
-#include <fstream>
-#include <cmath>
 
 using namespace std;
 
@@ -81,6 +76,71 @@ Baby::~Baby()
 	memorySize = 0;
 
 	cout << "Shutting Baby down..." << endl;
+}
+
+/*
+ * Simple conversion from a string of a binary number of any length to its integer equivalent
+ */
+int binaryToDecimal(string binary)
+{
+	int decimal = 0;
+
+	if (binary[binary.length() - 1] == '0' || binary.length() < 32)
+	{
+		for (unsigned int i=0; i<binary.length(); i++)
+		{
+			if (binary[i] == '1')
+			{
+				decimal += pow(2, i);
+			}
+		}
+	}
+	else if (binary[binary.length() - 1] == '1' && binary.length() == 32)
+	{
+		if (binary[0] == '1')
+		{
+			binary[0] ='0';
+		}
+	else
+	{
+		for (unsigned int i=0; i<binary.length(); i++)
+		{
+			if (binary[i] == '1')
+			{
+				binary[i] = '0';
+
+				for (int j=0; j>-1; j--)
+				{
+					binary[i] = '1';
+				}
+
+				break;
+			}
+		}
+	}
+
+	for (unsigned i=0; i<binary.length(); i++)
+	{
+		if (binary[i] == '0')
+		{
+			binary[i] = '1';
+		}
+		else
+			binary[i] = '0';
+		}
+
+		for (unsigned int i=0; i<binary.length(); i++)
+		{
+			if (binary[i] == '1')
+			{
+				decimal += pow(2, i);
+			}
+		}
+
+		decimal = decimal * -1;
+	}
+
+	return decimal;
 }
 
 /*
@@ -176,102 +236,25 @@ int Baby::getOperand()
 }
 
 /*
- * Simple conversion from a string of a binary number of any length to its integer equivalent
- */
-int Baby::binaryToDecimal(string binary)
-{
-	int decimal = 0;
-
-	if (binary[binary.length() - 1] == '0' || binary.length() < 32)
-	{
-		for (unsigned int i=0; i<binary.length(); i++)
-		{
-			if (binary[i] == '1')
-			{
-				decimal += pow(2, i);
-			}
-		}
-	}
-	else if (binary[binary.length() - 1] == '1' && binary.length() == 32)
-	{
-		if (binary[0] == '1')
-		{
-			binary[0] ='0';
-		}
-		else
-		{
-			for (unsigned int i=0; i<binary.length(); i++)
-			{
-				if (binary[i] == '1')
-				{
-					binary[i] = '0';
-
-					for (int j=0; j>-1; j--)
-					{
-						binary[i] = '1';
-					}
-
-					break;
-				}
-			}
-		}
-
-		for (unsigned i=0; i<binary.length(); i++)
-		{
-			if (binary[i] == '0')
-			{
-				binary[i] = '1';
-			}
-			else
-				binary[i] = '0';
-		}
-
-		for (unsigned int i=0; i<binary.length(); i++)
-		{
-			if (binary[i] == '1')
-			{
-				decimal += pow(2, i);
-			}
-		}
-
-		decimal = decimal * -1;
-	}
-
-	return decimal;
-}
-
-/*
- * Jump to the address stored in present instruction
+ * Jump to the address obtained from present instruction's opcode
  */
 void Baby::JMP()
 {
-	int presentInstructionValue = binaryToDecimal(presentInstruction);
-	string binary = bitset<32>(presentInstructionValue).to_string();
-
-	currentInstruction = "00000000000000000000000000000000";
-
-	for (unsigned int i=0; i<binary.length(); i++)
-	{
-		if (binary[i] == '0')
-		{
-			currentInstruction[31 - i] = '0';
-		}
-		else
-		{
-			currentInstruction[31 - i] = '1';
-		}
-	}
+	int operand = getOperand();
+	currentInstruction = readLineFromStore(operand);
 }
 
 /*
- * Jump to the address stored in currentInstruction + the value stored in presentInstruction
+ * Jump to the address stored in currentInstruction + the opcode of presentInstruction
  */
 void Baby::JRP()
 {
+	int operand = getOperand();
 	int currentInstructionValue = binaryToDecimal(currentInstruction);
-	int presentInstructionValue = binaryToDecimal(presentInstruction);
 
-	string binary = bitset<32>(currentInstructionValue + presentInstructionValue).to_string();
+	int result = currentInstructionValue + operand;
+
+	string binary = bitset<32>(result).to_string();
 
 	for (unsigned int i=0; i<binary.length(); i++)
 	{
@@ -287,35 +270,34 @@ void Baby::JRP()
 }
 
 /*
- * Retrieves the decimal value of the present instruction, converts it to binary and then
- * swaps its values round so it reads left to right. This is stored in the accumulator
+ * Jumps to the line specified by the operand of present instruction and stores its negative value in
+ * the accumulator
  */
 void Baby::LDN()
 {
 	int lineNumber = getOperand();
-		string binaryValue = readLineFromStore(lineNumber);
-		int negativeDecimalValue = binaryToDecimal(binaryValue) *-1;
-		string negativeBinary = bitset<32>(negativeDecimalValue).to_string();
+	string binaryValue = readLineFromStore(lineNumber);
+	int negativeDecimalValue = binaryToDecimal(binaryValue) *-1;
+	string negativeBinary = bitset<32>(negativeDecimalValue).to_string();
 
-		accumulator = "00000000000000000000000000000000";
+	accumulator = "00000000000000000000000000000000";
 
-		for (unsigned int i=0; i<negativeBinary.length(); i++)
+	for (unsigned int i=0; i<negativeBinary.length(); i++)
+	{
+		if (negativeBinary[i] == '0')
 		{
-			if (negativeBinary[i] == '0')
-			{
-				accumulator[31 - i] = '0';
-			}
-			else
-			{
-				accumulator[31 - i] = '1';
-			}
+			accumulator[31 - i] = '0';
 		}
+		else
+		{
+			accumulator[31 - i] = '1';
+		}
+	}
 }
 
 /*
- * Test STO function. STO is used to store the value of the accumulator register in a
- * specified location in the store. In the test function, this changes the first line of
- * the store (run the program and see).
+ * STO is used to store the value of the accumulator register in a specified location in the store.
+ * The line number is specified by the operand of present instruction
  */
 void Baby::STO()
 {
@@ -335,10 +317,10 @@ void Baby::STO()
 }
 
 /*
- * Takes the decimal version of the present instruction away from the decimal version of the
- * accumulator. The decimals are obtained through Dylan's binary conversion function.
- * The calculated decimal is then transformed back to binary through a handy to_string function
- * in the biset library
+ * Jumps to the line specified by present instruction's operand. Takes the decimal version of this
+ * instruction away from the decimal value of the accumulator. The decimals are obtained through Dylan's
+ * binary conversion function. The calculated decimal is then transformed back to binary through a handy
+ * to_string function in the bitset library
  */
 int Baby::SUB()
 {
@@ -369,7 +351,7 @@ int Baby::SUB()
 }
 
 /*
- * Returns true if the rightmost digit is 1, which usually indicates the number is negative
+ * Adds 1 to the current instruction register if the accumulator is negative (so skips the next instruction)
  */
 void Baby::CMP()
 {
@@ -399,9 +381,15 @@ void Baby::CMP()
 	}
 }
 
+/*
+ * Extension instruction. Adds the value of the accumulator to the value of the line specified by the
+ * operand of present instruction
+ */
 int Baby::ADD()
 {
-	int result = binaryToDecimal(accumulator) + binaryToDecimal(presentInstruction);
+	int operand = getOperand();
+	string storeLine = readLineFromStore(operand);
+	int result = binaryToDecimal(accumulator) + binaryToDecimal(storeLine);
 
 		if (result > 2147483647 || result < -2147483647)
 		{
@@ -425,10 +413,15 @@ int Baby::ADD()
 		return SUCCESS;
 }
 
-
+/*
+ * Extension instruction. Multiplies the value of the accumulator by the value of the line specified by the
+ * operand of present instruction
+ */
 int Baby::MUL()
 {
-	int result = binaryToDecimal(accumulator) * binaryToDecimal(presentInstruction);
+	int operand = getOperand();
+	string storeLine = readLineFromStore(operand);
+	int result = binaryToDecimal(accumulator) * binaryToDecimal(storeLine);
 
 	if (result > 2147483647 || result < -2147483647)
 	{
@@ -452,9 +445,15 @@ int Baby::MUL()
 	return SUCCESS;
 }
 
+/*
+ * Extension instruction. Divides the value of the accumulator by the value of the line specified by the
+ * operand of present instruction
+ */
 int Baby::DIV()
 {
-	int result = binaryToDecimal(accumulator) / binaryToDecimal(presentInstruction);
+	int operand = getOperand();
+	string storeLine = readLineFromStore(operand);
+	int result = binaryToDecimal(accumulator) / binaryToDecimal(storeLine);
 
 	if (result > 2147483647 || result < -2147483647)
 	{
@@ -478,16 +477,26 @@ int Baby::DIV()
 	return SUCCESS;
 }
 
+/*
+ * Extension instruction. Copies the instruction in current instruction register to register 4
+ */
 void Baby::MVF()
 {
 	register4 = currentInstruction;
 }
 
+/*
+ * Extension instruction. Copies the instruction in register 4 to current instruction register
+ */
 void Baby::MVT()
 {
 	currentInstruction = register4;
 }
 
+/*
+ * Takes a string instruction and an integer line number that indicates what line in the store to insert
+ * the string instruction.
+ */
 void Baby::insertInstruction(string line, int lineNumber)
 {
 	for (unsigned i=0; i<line.length(); i++)
@@ -504,41 +513,88 @@ void Baby::insertInstruction(string line, int lineNumber)
 }
 
 /*
+ * Function that will allow the program to continue if the user enters an empty value. Otherwise, ends
+ * the program.
+ */
+int executeOrStop()
+{
+	cout << "Press 'x' to execute or any other key to terminate program." << endl;
+
+	string userInput = "";
+
+	cin >> userInput;
+
+	if(userInput != "x")
+	{
+		return STOP;
+	}
+	else
+	{
+		return CONTINUE;
+	}
+}
+
+/*
  * Calls the appropriate function based on the opcode given in the line number.
  */
 int Baby::decode()
 {
-	int opcode = getOpcode();
+	int operand = getOperand();
 
-	cout << "Press 'x' to execute or any other key to terminate program." << endl;
+	if (operand >= memorySize)
+	{
+		return NOT_ENOUGH_MEMORY;
+	}
+
+	int opcode = getOpcode();
 
 	if(opcode == 0)
 	{
-		cout << "Performing JMP..." << endl;
+		cout << "Ready to execute JMP..." << endl;
+		if (executeOrStop() == STOP)
+		{
+			return STOP;
+		}
 		JMP();
 		return CONTINUE;
 	}
 	else if(opcode == 1)
 	{
-		cout << "Performing JRP..." << endl;
+		cout << "Ready to execute JRP..." << endl;
+		if (executeOrStop() == STOP)
+		{
+			return STOP;
+		}
 		JRP();
 		return CONTINUE;
 	}
 	else if(opcode == 2)
 	{
-		cout << "Performing LDN..." << endl;
+		cout << "Ready to execute LDN..." << endl;
+		if (executeOrStop() == STOP)
+		{
+			return STOP;
+		}
 		LDN();
 		return CONTINUE;
 	}
 	else if(opcode == 3)
 	{
-		cout << "Performing STO..." << endl;
+		cout << "Ready to execute STO..." << endl;
+		if (executeOrStop() == STOP)
+		{
+			return STOP;
+		}
 		STO();
 		return CONTINUE;
 	}
 	else if(opcode == 4 || opcode == 5)
 	{
-		cout << "Performing SUB..." << endl;
+		cout << "Ready to execute SUB..." << endl;
+		if (executeOrStop() == STOP)
+		{
+			return STOP;
+		}
 
 		if (SUB() == OUT_OF_RANGE)
 		{
@@ -550,7 +606,11 @@ int Baby::decode()
 	}
 	else if(opcode == 6)
 	{
-		cout << "Performing CMP..." << endl;
+		cout << "Ready to execute CMP..." << endl;
+		if (executeOrStop() == STOP)
+		{
+			return STOP;
+		}
 		CMP();
 		return CONTINUE;
 	}
@@ -560,7 +620,11 @@ int Baby::decode()
 	}
 	else if (opcode == 8 || opcode == 9)
 	{
-		cout << "Performing ADD..." << endl;
+		cout << "Ready to execute ADD..." << endl;
+		if (executeOrStop() == STOP)
+		{
+			return STOP;
+		}
 		if (ADD() == OUT_OF_RANGE)
 		{
 			cout << "Sum went out of range!" << endl;
@@ -571,7 +635,11 @@ int Baby::decode()
 	}
 	else if (opcode == 10 || opcode == 11)
 	{
-		cout << "Performing MUL..." << endl;
+		cout << "Ready to execute MUL..." << endl;
+		if (executeOrStop() == STOP)
+		{
+			return STOP;
+		}
 		if (MUL() == OUT_OF_RANGE)
 		{
 			cout << "Multiplication calculation went out of range!" << endl;
@@ -582,7 +650,11 @@ int Baby::decode()
 	}
 	else if (opcode == 12 || opcode == 13)
 	{
-		cout << "Performing DIV..." << endl;
+		cout << "Ready to execute DIV..." << endl;
+		if (executeOrStop() == STOP)
+		{
+			return STOP;
+		}
 		if (DIV() == OUT_OF_RANGE)
 		{
 			cout << "Division calculation went out of range!" << endl;
@@ -593,13 +665,21 @@ int Baby::decode()
 	}
 	else if (opcode == 14)
 	{
-		cout << "Performing MVF..." << endl;
+		cout << "Ready to execute MVF..." << endl;
+		if (executeOrStop() == STOP)
+		{
+			return STOP;
+		}
 		MVF();
 		return CONTINUE;
 	}
 	else
 	{
-		cout << "Performing MVT..." << endl;
+		cout << "Ready to execute MVT..." << endl;
+		if (executeOrStop() == STOP)
+		{
+			return STOP;
+		}
 		MVT();
 		return CONTINUE;
 	}
@@ -623,12 +703,12 @@ void Baby::printState()
 		cout << endl;
 	}
 
-	cout << endl << "Accumulator: " << accumulator << " = " << binaryToDecimal(accumulator) << endl;
-	cout << "Current Instruction: " << currentInstruction << " = " << binaryToDecimal(currentInstruction) << endl;
-	cout << "Present Instruction: " << presentInstruction << " = " << binaryToDecimal(presentInstruction) << endl;
-	cout << "Register 4: " << register4 << " = " << binaryToDecimal(register4) << endl << endl;
+	cout << endl << "Accumulator: \t\t" << accumulator << " = " << binaryToDecimal(accumulator) << endl;
+	cout << "Current Instruction: \t" << currentInstruction << " = " << binaryToDecimal(currentInstruction) << endl;
+	cout << "Present Instruction: \t" << presentInstruction << " = " << binaryToDecimal(presentInstruction) << endl;
+	cout << "Register 4: \t\t" << register4 << " = " << binaryToDecimal(register4) << endl;
 	cout << "Operand: " << getOperand() << endl;
-	cout << "Opcode: " << getOpcode() << endl;
+	cout << "Opcode: " << getOpcode() << endl << endl;
 }
 
 /*

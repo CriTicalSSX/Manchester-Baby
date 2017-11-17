@@ -12,17 +12,22 @@
 #ifndef BABY_H_
 #define BABY_H_
 
+#include <iostream>
+#include <bitset>
+#include <stdlib.h>
+#include <fstream>
+#include <cmath>
+
 /*
  * Should be returned from any of the 7 standard operations.
  * This helps diagnose any faults and safely shut Baby down.
  * Feel free to add more if you think they could be useful.
  */
-#define SUCCESS	(0)
-#define FAIL (1)
-#define OUT_OF_RANGE (2)
-#define STOP (3)
-#define CONTINUE (4)
-#define END_PROGRAM (5)
+#define SUCCESS	(0)					//task succeeded
+#define OUT_OF_RANGE (1)			//arithmetical sum went beyond what Baby can store
+#define STOP (2)					//stop execution
+#define CONTINUE (3)				//continue execution
+#define NOT_ENOUGH_MEMORY (4)		//Baby ran out of memory for the current program
 
 using namespace std;
 
@@ -48,7 +53,6 @@ public:
 	string readLineFromStore(int lineNumber);
 	int getOperand();
 	int getOpcode();
-	int binaryToDecimal(string binary);
 
 	void JMP();
 	void JRP();

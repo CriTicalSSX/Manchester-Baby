@@ -12,6 +12,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <cmath>
 #include "baby.h"
 
 //For file input errors
@@ -21,26 +22,32 @@
 
 using namespace std;
 
+/*
+* Clears the screen
+*/
 void clear()
 {
 	cout << string( 100, '\n' );
 }
 
+/*
+* Outputs all of Baby's instructions to the terminal
+*/
 void displayInstructionSet()
 {
 	clear();
 
 	cout << "OPCODE\t\tFUNCTION\tDESCRIPTION" << endl;
-	cout << "0000\t\tJMP\t\tJumps to instruction stored in present instruction register" << endl;
-	cout << "1000\t\tJRP\t\tJumps to instruction stored in present instruction register + value of current instruction register" << endl;
-	cout << "0100\t\tLDN\t\tNegates value in present instruction register and stores it in accumulator register" << endl;
-	cout << "1100\t\tSTO\t\tStore the number in the accumulator register in the address pointed to by the current instruction register" << endl;
-	cout << "0010/1010\t\tSUB\t\tSubtract value of present instruction register from accumulator register and store in accumulator register" << endl;
+	cout << "0000\t\tJMP\t\tJumps to instruction specified by present instruction operand" << endl;
+	cout << "1000\t\tJRP\t\tJumps to instruction specified by present instruction operand + value of current instruction register" << endl;
+	cout << "0100\t\tLDN\t\tNegates value of line specified by present instruction operand and stores it in accumulator register" << endl;
+	cout << "1100\t\tSTO\t\tStore the number in the accumulator register in the line number specified by the operand of present instruction." << endl;
+	cout << "0010/1010\tSUB\t\tSubtract value of line specified by present instruction from accumulator register and store in accumulator register" << endl;
 	cout << "0110\t\tCMP\t\tSkips the next instruction if the accumulator is negative" << endl;
 	cout << "1110\t\tSTP\t\tStops execution of any further instructions" << endl;
-	cout << "0001/1001\t\tADD\t\tAdd value of present instruction register to accumulator register and store in accumulator register" << endl;
-	cout << "0101/1101\t\tMUL\t\tMultiply value of present instruction register by value of accumulator register and store in accumulator register" << endl;
-	cout << "0011/1011\t\tDIV\t\tDivide value of accumulator register by present instruction register and store in accumulator register" << endl;
+	cout << "0001/1001\tADD\t\tAdd value of line specified by present instruction to accumulator register and store in accumulator register" << endl;
+	cout << "0101/1101\tMUL\t\tMultiply value of line specified by present instruction by value of accumulator register and store in accumulator register" << endl;
+	cout << "0011/1011\tDIV\t\tDivide value of accumulator register by line specified by present instruction and store in accumulator register" << endl;
 	cout << "0111\t\tMVF\t\tMoves instruction in current instruction register to Register 4" << endl;
 	cout << "1111\t\tMVT\t\tMoves instruction in Register 4 to current instruction register" << endl << endl;
 }
@@ -57,7 +64,7 @@ int checkFile(string name, int memorySize)
 		bool fileOK = true;
 		int lineCount = 0;
 
-		while (getline(input, line) && fileOK == true)
+		while (getline(input, line) && fileOK == true)			//while there are lines in the file to read
 		{
 			int numberCount = 0;
 			lineCount++;
@@ -69,9 +76,9 @@ int checkFile(string name, int memorySize)
 			
 			for (unsigned i=0; i<line.length(); i++)
 			{
-				if (line[i] == '0' || line[i] == '1')
+				if (line[i] == '0' || line[i] == '1')		
 				{
-					numberCount++;
+					numberCount++;							//Used to ensure there are 32 bits per line
 				}
 			}
 			
@@ -85,10 +92,7 @@ int checkFile(string name, int memorySize)
 				{
 					if (line[i] != '0' && line[i] != '1')			//if any character is not equal to a 0 or a 1
 					{
-						if (i < 32)
-						{
-							fileOK = false;
-						}
+						fileOK = false;
 					}
 				}
 			}
@@ -114,34 +118,16 @@ int checkFile(string name, int memorySize)
 	}
 }
 
-/*
- * Function that will allow the program to continue if the user enters an empty value. Otherwise, ends
- * the program.
- */
-int cont()
-{
-	string userInput = "";
-
-	cin >> userInput;
-
-	if(userInput != "x")
-	{
-		return END_PROGRAM;
-	}
-	else
-	{
-		return CONTINUE;
-	}
-}
-
 int main()
 {
 	cout << endl << "This is the Manchester Baby!" << endl;
 
 	char input;
 	int sizeInput = 32;
+
 	while (input != '1')
 	{
+		//Main menu
 		cout << "Choose an option:" << endl;
 		cout << "1. Load a machine code program into Baby" << endl;
 		cout << "2. View Baby's instruction set" << endl;
@@ -198,7 +184,6 @@ int main()
 
 		if (input == '4')
 		{
-			clear();
 			return 0;
 		}
 	}
@@ -246,34 +231,38 @@ int main()
 		cout << "Program successfully written to Baby." << endl << endl;
 
 //////////////////////////////////////////////////////////////////////////////////////////
+		//PROGRAM LOOP
 
 		bool stop = false;
 
 		do
 		{
-			clear();
+			clear();		//clear screen
 
-			baby->incrementCurrentInstruction();
-			baby->fetch();
+			baby->incrementCurrentInstruction();		//does what it says on the tin. Starts execution of programs from second line of store (this is where they are loaded to)
+			baby->fetch();				//retrieve the instruction from that address
 
-			baby->printState();
+			baby->printState();			//print the current state of Baby
 
-			if(baby->decode() == STOP)
+			int returnCode = baby->decode();		//decode instruction and execute
+
+			if(returnCode == STOP)					
 			{
 				stop = true;
 			}
-			else if(cont() == END_PROGRAM)
+			else if (returnCode == NOT_ENOUGH_MEMORY)			//Instruction tried to access non-existent part of memory
 			{
-				stop = true;
+				cout << "Instruction error! Present instruction refers to line " << baby->getOperand() << ", which is non-existent!" << endl;
 			}
-			else if (baby->getCurrentInstructionAddress() > 30)
+
+			if (baby->getCurrentInstructionAddress() > sizeInput -1)		//Reached end of store without finding stop instruction
 			{
 				stop = true;
 			}
 		}
 		while (stop == false);
 
-		if (baby->getCurrentInstructionAddress() > 30)
+		if (baby->getCurrentInstructionAddress() > sizeInput-1)
 		{
 			cout << "Error! Reached end of program without finding STOP." << endl;
 		}
@@ -284,4 +273,3 @@ int main()
 	delete baby;
 	return 0;
 }
-
