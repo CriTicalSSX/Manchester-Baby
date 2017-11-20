@@ -37,8 +37,8 @@ string instructions[13][3] = {
 {"ADD", "y", "0001"},
 {"MUL", "y", "0101"},
 {"DIV", "y", "0011"},
-{"MVT", "y", "1111"},
-{"MVF", "y", "0111"},
+{"MVT", "n", "1111"},
+{"MVF", "n", "0111"},
 };
 
 //loads a file into the array to be processed
@@ -157,12 +157,10 @@ string compiler(int var_no) {
 		int pos = 0;
 		int start = 0;
 		size_t found;
-
 		found = current.find(':');
 		if (found!=string::npos) {
 			pos = (current.find_first_of(':')+1);
 		}
-
 		start = current.find_first_not_of(" \t",pos);
 		string holder = current.substr(start,3);
 
@@ -181,7 +179,6 @@ string compiler(int var_no) {
 			//finds the integer related to the variable
 			found = current.find_first_not_of("-1234567890 \t",pos);
 			string decimal = current.substr(pos,11);
-
 			int value = atoi(decimal.c_str());
 			var_data[var_no][1] = decimalToBinary(value,"variable");
 			var_data[var_no][2] = decimalToBinary(line,"operand");				
